@@ -9,7 +9,7 @@ namespace ProjetoLivraria.Services.Models.Requests
     public class LivroPutRequest
     {
         [Required(ErrorMessage = "Por favor, informe o ID do livro.")]
-        public string IdLivro { get; set; }
+        public Guid IdLivro { get; set; }
 
         [RegularExpression("^[0-9]{13}$", ErrorMessage = "Por favor, informe 13 dígitos numéricos.")]
         [Required(ErrorMessage = "Por favor, informe o ISBN do livro.")]

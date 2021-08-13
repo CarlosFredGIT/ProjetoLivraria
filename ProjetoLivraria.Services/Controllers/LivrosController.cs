@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ProjetoLivraria.Domain.Entities;
+using ProjetoLivraria.Repository.Repositories;
 using ProjetoLivraria.Services.Models.Requests;
 using ProjetoLivraria.Services.Models.Responses;
 using System;
@@ -14,87 +16,184 @@ namespace ProjetoLivraria.Services.Controllers
     public class LivrosController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Post(LivroPostRequest request) //Inserir
+        public IActionResult Post(LivroPostRequest request,
+            [FromServices] LivrosRepository livrosRepository) 
         {
-            //criar gravação em banco
-
-            var response = new LivroPostResponse
+            try
             {
-                IdLivro = Guid.NewGuid(),
-                Isbn = request.Isbn,
-                Autor = request.Autor,
-                Nome = request.Nome,
-                Preco = request.Preco,
-                DataPublicacao = DateTime.Parse(request.DataPublicacao)
-            };
-            return Ok(response); 
+                var livros = new Livros
+                {
+                    IdLivro = Guid.NewGuid(),
+                    Isbn = request.Isbn,
+                    Autor = request.Autor,
+                    Nome = request.Nome,
+                    Preco = request.Preco,
+                    DataPublicacao = DateTime.Parse(request.DataPublicacao)
+                };
+
+                if (livrosRepository.ObterPorIsbn(livros.Isbn) != null)
+                {
+                    return StatusCode(403, new { Mensagem = $"Ops! O ISBN '{livros.Isbn}' já está cadastrado. =/" });
+                }
+                else
+                {
+                    livrosRepository.Inserir(livros);
+                }
+                
+                var response = new LivroPostResponse
+                {
+                    IdLivro = livros.IdLivro,
+                    Isbn = livros.Isbn,
+                    Autor = livros.Autor,
+                    Nome = livros.Nome,
+                    Preco = livros.Preco,
+                    DataPublicacao = livros.DataPublicacao
+                };
+
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpPut]
-        public IActionResult Put(LivroPutRequest request) //Alterar
+        public IActionResult Put(LivroPutRequest request,
+            [FromServices] LivrosRepository livrosRepository) 
         {
-            //criar gravação em banco
-
-            var response = new LivroPutResponse
+            try
             {
-                IdLivro = Guid.Parse(request.IdLivro),
-                Isbn = request.Isbn,
-                Autor = request.Autor,
-                Nome = request.Nome,
-                Preco = request.Preco,
-                DataPublicacao = DateTime.Parse(request.DataPublicacao)
-            };
-            
-            return Ok(response); 
+                var livros = livrosRepository.ObterPorId(request.IdLivro);
+
+                if (livros != null)
+                {
+                    livros.Isbn = request.Isbn;
+                    livros.Autor = request.Autor;
+                    livros.Nome = request.Nome;
+                    livros.Preco = request.Preco;
+                    livros.DataPublicacao = DateTime.Parse(request.DataPublicacao);
+
+                    livrosRepository.Alterar(livros);
+
+                    var response = new LivroPutResponse
+                    {
+                        IdLivro = livros.IdLivro,
+                        Isbn = livros.Isbn,
+                        Autor = livros.Autor,
+                        Nome = livros.Nome,
+                        Preco = livros.Preco,
+                        DataPublicacao = livros.DataPublicacao
+                    };
+
+                    return Ok(response);
+                }
+                else
+                {
+                    return StatusCode(403, new { Mensagem = $"Ops! O ID não está cadastrado. =/" });
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id) //Deletar
+        public IActionResult Delete(Guid id, 
+            [FromServices] LivrosRepository livrosRepository) 
         {
-            //criar gravação em banco
-
-            var response = new LivroDeleteResponse
+            try
             {
-                IdLivro = id,
-                Isbn = "1234567891234",
-                Autor = "Anielle Franco",
-                Nome = "Sexo Selvagem",
-                Preco = 100,
-                DataPublicacao = new DateTime(2021, 08, 11)
-            };
+                var livros = livrosRepository.ObterPorId(id);
 
-            return Ok(response);
+                if (livros != null)
+                {
+                    livrosRepository.Excluir(livros);
+
+                    var response = new LivroDeleteResponse
+                    {
+                        IdLivro = livros.IdLivro,
+                        Isbn = livros.Isbn,
+                        Autor = livros.Autor,
+                        Nome = livros.Nome,
+                        Preco = livros.Preco,
+                        DataPublicacao = livros.DataPublicacao
+                    };
+
+                    return Ok(response);
+                }
+                else
+                {
+                    return StatusCode(403, new { Mensagem = $"Ops! O ID não está cadastrado. =/" });
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
         }
 
         [HttpGet]
-        public IActionResult Get() //Consultar
+        public IActionResult Get(
+            [FromServices] LivrosRepository livrosRepository)
         {
-            //criar consulta no banco
-
-            var response = new List<LivroGetResponse>();
-
-
-            response.Add(new LivroGetResponse
+            try
             {
-                IdLivro = Guid.NewGuid(),
-                Isbn = "1234567891234",
-                Autor = "Anielle Franco",
-                Nome = "Sexo Selvagem",
-                Preco = 100,
-                DataPublicacao = new DateTime(2021, 08, 11)
-            });
+                var lista = livrosRepository.ObterTodos();
 
-            response.Add(new LivroGetResponse
+                List<LivroGetResponse> result = new List<LivroGetResponse>();
+
+                foreach (var item in lista)
+                {
+                    result.Add(new LivroGetResponse
+                    {
+                        IdLivro = item.IdLivro,
+                        Isbn = item.Isbn,
+                        Autor = item.Autor,
+                        Nome = item.Nome,
+                        Preco = item.Preco,
+                        DataPublicacao = item.DataPublicacao
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception e)
             {
-                IdLivro = Guid.NewGuid(),
-                Isbn = "1111111111111",
-                Autor = "Carlos Frederico",
-                Nome = "Pentada Violenta",
-                Preco = 200,
-                DataPublicacao = new DateTime(2021, 08, 10)
-            });
+                return StatusCode(500, e.Message);
+            }
+        }
 
-            return Ok(response);
-        }  
+        [HttpGet("{id}")]
+        public IActionResult GetById(Guid id,
+            [FromServices] LivrosRepository livrosRepository)
+        {
+            try
+            {
+                var livros = livrosRepository.ObterPorId(id);
+
+                if (livros != null)
+                {
+                    var response = new LivroGetResponse
+                    {
+                        IdLivro = livros.IdLivro,
+                        Isbn = livros.Isbn,
+                        Autor = livros.Autor,
+                        Nome = livros.Nome,
+                        Preco = livros.Preco,
+                        DataPublicacao = livros.DataPublicacao
+                    };
+
+                    return Ok(response);
+                }
+
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
     }
 }

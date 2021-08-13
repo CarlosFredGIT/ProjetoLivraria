@@ -8,4 +8,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.1.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ProjetoLivraria.Domain\ProjetoLivraria.Domain.csproj" />
+    <ProjectReference Include="..\ProjetoLivraria.Repository\ProjetoLivraria.Repository.csproj" />
+  </ItemGroup>
+
 </Project>
