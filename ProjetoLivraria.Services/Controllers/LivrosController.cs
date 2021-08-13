@@ -165,7 +165,7 @@ namespace ProjetoLivraria.Services.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("ById/{id}")]
         public IActionResult GetById(Guid id,
             [FromServices] LivrosRepository livrosRepository)
         {
@@ -189,6 +189,161 @@ namespace ProjetoLivraria.Services.Controllers
                 }
 
                 return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
+
+        [HttpGet("ByIsbn/{isbn}")]
+        public IActionResult GetByIsbn(string isbn,
+            [FromServices] LivrosRepository livrosRepository)
+        {
+            try
+            {
+                var livros = livrosRepository.ObterPorIsbn(isbn);
+
+                if (livros != null)
+                {
+                    var response = new LivroGetResponse
+                    {
+                        IdLivro = livros.IdLivro,
+                        Isbn = livros.Isbn,
+                        Autor = livros.Autor,
+                        Nome = livros.Nome,
+                        Preco = livros.Preco,
+                        DataPublicacao = livros.DataPublicacao
+                    };
+
+                    return Ok(response);
+                }
+
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
+
+        [HttpGet("ByAutor/{autor}")]
+        public IActionResult GetByAutor(string autor,
+            [FromServices] LivrosRepository livrosRepository)
+        {
+            try
+            {
+                var livros = livrosRepository.ObterPorAutor(autor);
+
+                List<LivroGetResponse> result = new List<LivroGetResponse>();
+
+                foreach (var item in livros)
+                {
+                    result.Add(new LivroGetResponse
+                    {
+                        IdLivro = item.IdLivro,
+                        Isbn = item.Isbn,
+                        Autor = item.Autor,
+                        Nome = item.Nome,
+                        Preco = item.Preco,
+                        DataPublicacao = item.DataPublicacao
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
+
+        [HttpGet("ByNome/{nome}")]
+        public IActionResult GetByNome(string nome,
+            [FromServices] LivrosRepository livrosRepository)
+        {
+            try
+            {
+                var livros = livrosRepository.ObterPorNome(nome);
+
+                List<LivroGetResponse> result = new List<LivroGetResponse>();
+
+                foreach (var item in livros)
+                {
+                    result.Add(new LivroGetResponse
+                    {
+                        IdLivro = item.IdLivro,
+                        Isbn = item.Isbn,
+                        Autor = item.Autor,
+                        Nome = item.Nome,
+                        Preco = item.Preco,
+                        DataPublicacao = item.DataPublicacao
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
+
+        [HttpGet("ByPreco/{precoMin}/{precoMax}")]
+        public IActionResult GetByPreco(decimal precoMin, decimal precoMax,
+            [FromServices] LivrosRepository livrosRepository)
+        {
+            try
+            {
+                var livros = livrosRepository.ObterPorPreco(precoMin, precoMax);
+
+                List<LivroGetResponse> result = new List<LivroGetResponse>();
+
+                foreach (var item in livros)
+                {
+                    result.Add(new LivroGetResponse
+                    {
+                        IdLivro = item.IdLivro,
+                        Isbn = item.Isbn,
+                        Autor = item.Autor,
+                        Nome = item.Nome,
+                        Preco = item.Preco,
+                        DataPublicacao = item.DataPublicacao
+                    });
+                }
+
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
+            }
+        }
+
+        [HttpGet("ByData/{dataMin}/{dataMax}")]
+        public IActionResult GetByData(DateTime dataMin, DateTime dataMax,
+            [FromServices] LivrosRepository livrosRepository)
+        {
+            try
+            {
+                var livros = livrosRepository.ObterPorData(dataMin, dataMax);
+
+                List<LivroGetResponse> result = new List<LivroGetResponse>();
+
+                foreach (var item in livros)
+                {
+                    result.Add(new LivroGetResponse
+                    {
+                        IdLivro = item.IdLivro,
+                        Isbn = item.Isbn,
+                        Autor = item.Autor,
+                        Nome = item.Nome,
+                        Preco = item.Preco,
+                        DataPublicacao = item.DataPublicacao
+                    });
+                }
+
+                return Ok(result);
             }
             catch (Exception e)
             {

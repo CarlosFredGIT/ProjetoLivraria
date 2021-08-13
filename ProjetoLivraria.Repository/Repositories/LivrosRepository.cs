@@ -51,7 +51,10 @@ namespace ProjetoLivraria.Repository.Repositories
 
         public Livros ObterPorIsbn(string isbn)
         {
-            return context.Livros.FirstOrDefault(c => c.Isbn.Equals(isbn));
+            return context.Livros
+                .Where(c => c.Isbn.Contains(isbn))
+                .OrderBy(c => c.Nome)
+                .FirstOrDefault();
         }
 
         public List<Livros> ObterPorAutor(string autor)
